@@ -14,6 +14,9 @@ import org.apache.lucene.index.MultiTerms;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.Terms;
 import org.apache.lucene.index.TermsEnum;
+import org.apache.lucene.queries.spans.SpanNearQuery;
+import org.apache.lucene.queries.spans.SpanQuery;
+import org.apache.lucene.queries.spans.SpanTermQuery;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
@@ -80,16 +83,24 @@ public class SearchService {
             // return builder.build();
             return q ;
         }
-        else if (input.contains("*")) {        // Wildcard: *wild*card*
-            // List<String> wildcards = Arrays.asList(input.split("*"));
-            // for(String token : wildcards) {
+        else if (input.contains("*")) {        // Wildcard: *wild*card*            
+            System.out.println("SearchService : buildQuery : wildcard : " + input.replaceAll("^\\*+|\\*+$", "")) ;
 
-            // }
+            List<String> wildcards = Arrays.asList(input.toLowerCase().replaceAll("^\\*+|\\*+$", "").split("\\*"));            
+            System.out.println("SearchService : buildQuery : wildcard : after regex") ;
+            List<SpanQuery> tokens = new ArrayList<>() ;
+            for(String token : wildcards) {
+                System.err.print(token + " ");
+                tokens.add(new SpanTermQuery(new Term("content", token))) ;
+            }
+            System.out.println("");
+            SpanNearQuery spanQuery = new SpanNearQuery(tokens.toArray(new SpanQuery[0]), 100000, false) ;
 
             System.out.println("SearchService : buildQuery : wildcard") ;
-            return new WildcardQuery(
-                    new Term("content", input.toLowerCase())
-            );
+            return spanQuery ;
+            // return new WildcardQuery(
+            //         new Term("content", input.toLowerCase())
+            // );
         }
 
         // Default term search
