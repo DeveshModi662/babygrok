@@ -4,6 +4,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.index.IndexWriter;
@@ -51,8 +52,13 @@ public class CodeIndexer {
                     doc.add(new StringField("filename", line.filename(), Field.Store.YES)) ;
                     doc.add(new StoredField("line", line.lineNumber())) ;
                 }
-                else {
+                else {                    
+                    FieldType contentFieldType = new FieldType(TextField.TYPE_STORED);
+                    contentFieldType.setStoreTermVectors(true);
+                    contentFieldType.setStoreTermVectorOffsets(true);
+                    contentFieldType.setStoreTermVectorPositions(true);
                     doc.add(new TextField("content", line.content(), Field.Store.NO)) ;
+                    // doc.add(new Field("content", line.content(), contentFieldType)) ;
                     doc.add(new StringField("filename", line.filename(), Field.Store.YES)) ;
                 }
                 indexWriter.addDocument(doc) ;
